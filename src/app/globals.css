@@ -2,26 +2,38 @@
 @tailwind components;
 @tailwind utilities;
 
-:root {
-  --background: #ffffff;
-  --foreground: #171717;
+/* Global Reset */
+html, body {
+  height: 100%;
+  margin: 0;
+  overflow-x: hidden; /* Disable horizontal scroll */
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+/* Mobile Styles (max-width: 640px) */
+@media (max-width: 640px) {
+  body {
+    width: 100%; /* Ensure no extra width on small screens */
+  }
+  
+  .container, .your-class, .your-element {
+    width: 100%;
+    height: auto;
+    max-width: 100%;
+    padding: 10px; /* Prevent content from touching the edges */
   }
 }
 
-body {
-  color: var(--foreground);
-  background: var(--background);
-  font-family: Arial, Helvetica, sans-serif;
-}
-
-@layer utilities {
-  .text-balance {
-    text-wrap: balance;
+/* Desktop Styles (min-width: 641px) */
+@media (min-width: 641px) {
+  body {
+    overflow-x: visible; /* Re-enable horizontal scrolling on larger screens */
   }
+
+  /* Add additional styles for larger screens if needed */
 }
