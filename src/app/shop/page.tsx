@@ -1,207 +1,92 @@
+"use client";
+import Image from "next/image";
+import { useState, useEffect } from "react";
+import { useRouter } from "next/navigation"; 
+import { client } from "@/sanity/lib/client";
+import { allProducts } from "@/sanity/lib/queries";
+import { urlFor } from "@/sanity/lib/image";
+import { Products } from "../../../types/products";
+import Link from "next/link";
 
-"use client"
-import Image from 'next/image';
-import { useState } from 'react';
+const Shop = () => {
+  const [products, setProducts] = useState<Products[]>([]);
+  const [successMessage, setSuccessMessage] = useState<string | null>(null);
+  const router = useRouter();
 
-export default function ProductsPageList() { 
-  const [selectedColor1, setSelectedColor1] = useState('red');
-  const [selectedColor2, setSelectedColor2] = useState('blue');
-  const [selectedColor3, setSelectedColor3] = useState('green');
-  const [selectedColor4, setSelectedColor4] = useState('yellow');
-  const [selectedColor5, setSelectedColor5] = useState('red');
+  useEffect(() => {
+    async function fetchProducts() {
+      const fetchedProducts: Products[] = await client.fetch(allProducts);
+      setProducts(fetchedProducts);
+    }
+    fetchProducts();
+  }, []);
+
+  const handleClick = (product: Products) => {
+    console.log("Product added to cart:", product);
+    setSuccessMessage("Your product has been added to the cart successfully!");
+    setTimeout(() => setSuccessMessage(null), 3000); // Clear message after 3 seconds
+  };
 
   return (
-    <div className="bg-gray-100 py-16 px-6">
-      <h2 className="text-3xl font-bold text-center mb-8">Featured Products</h2>
-      <p className="text-xl text-center mb-8">Explore our best-selling products</p>
+    <>
+      {/* Product Section */}
+      <section className="py-16 px-6 bg-gray-50">
+        <h2 className="text-3xl font-bold text-center mb-8 text-red-800">Fabulous Products</h2>
 
-      {/* Grid of Products */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-8">
-        {/* Product 1 */}
-        <div className="bg-white shadow-lg rounded-lg overflow-hidden">
-          <Image
-            src="/app/components/images/product1.jpg" // Replace with your product image path
-            alt="Product 1"
-            className="w-full h-64 object-cover"
-            height={300}
-            width={400}
-          />
-          <div className="p-4">
-            <h3 className="text-lg font-semibold">Product 1</h3>
-            <p className="text-gray-600 mt-2">$19.99</p>
-            <div className="flex mt-4 justify-start gap-4">
-              <button
-                className={`w-8 h-8 rounded-full ${selectedColor1 === 'red' ? 'border-4 border-black' : ''}`}
-                style={{ backgroundColor: 'red' }}
-                onClick={() => setSelectedColor1('red')}
-              />
-              <button
-                className={`w-8 h-8 rounded-full ${selectedColor1 === 'blue' ? 'border-4 border-black' : ''}`}
-                style={{ backgroundColor: 'blue' }}
-                onClick={() => setSelectedColor1('blue')}
-              />
-              <button
-                className={`w-8 h-8 rounded-full ${selectedColor1 === 'green' ? 'border-4 border-black' : ''}`}
-                style={{ backgroundColor: 'green' }}
-                onClick={() => setSelectedColor1('green')}
-              />
-              <button
-                className={`w-8 h-8 rounded-full ${selectedColor1 === 'yellow' ? 'border-4 border-black' : ''}`}
-                style={{ backgroundColor: 'yellow' }}
-                onClick={() => setSelectedColor1('yellow')}
-              />
+        {products.length > 0 ? (
+          <div className="max-w-6xl mx-auto px-4 py-8">
+            <h1 className="text-3xl font-bold text-center mb-8 text-blue-800">Our Products</h1>
+            <br />
+            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-8">
+              {products.map((product) => (
+                <div key={product._id} className="bg-white rounded-lg shadow-md hover:shadow-xl transform transition duration-300 hover:scale-105">
+                  <div className="relative w-full h-56">
+                    {product.image && (
+                      <Image
+                        src={urlFor(product.image).url()}
+                        alt={product.name}
+                        priority={true}
+                        fill
+                        sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
+                        style={{ objectFit: "cover", borderRadius: "0.5rem" }}
+                      />
+                    )}
+                  </div>
+                  <div className="p-4 text-center space-y-2">
+                    <h2 className="text-xl font-semibold text-gray-800 truncate">{product.name}</h2>
+                    <p className="text-green-600 text-lg font-bold">${product.price}</p>
+                    {product.discountPercent > 0 && (
+                      <p className="text-red-500 text-sm font-semibold">{product.discountPercent}% Off</p>
+                    )}
+                    <Link href={`/product/${product.slugCurrent}`}>
+                      <button className="mt-4 mb-2 bg-purple-600 text-white text-xs font-medium py-1 px-3 rounded hover:bg-purple-700">
+                        View Details
+                      </button>
+                    </Link>
+                    <button
+                      onClick={() => handleClick(product)}
+                      className="mt-4 mb-2 bg-purple-600 text-white text-xs font-medium py-1 px-3 rounded hover:bg-purple-700"
+                    >
+                      Add to Cart
+                    </button>
+                  </div>
+                </div>
+              ))}
             </div>
           </div>
-        </div>
+        ) : (
+          <p className="text-center">Loading products...</p>
+        )}
+      </section>
 
-        {/* Product 2 */}
-        <div className="bg-white shadow-lg rounded-lg overflow-hidden">
-          <Image
-            src="/images/product2.jpg" // Replace with your product image path
-            alt="Product 2"
-            className="w-full h-64 object-cover"
-            width={300}
-            height={300}
-          />
-          <div className="p-4">
-            <h3 className="text-lg font-semibold">Product 2</h3>
-            <p className="text-gray-600 mt-2">$29.99</p>
-            <div className="flex mt-4 justify-start gap-4">
-              <button
-                className={`w-8 h-8 rounded-full ${selectedColor2 === 'red' ? 'border-4 border-black' : ''}`}
-                style={{ backgroundColor: 'red' }}
-                onClick={() => setSelectedColor2('red')}
-              />
-              <button
-                className={`w-8 h-8 rounded-full ${selectedColor2 === 'blue' ? 'border-4 border-black' : ''}`}
-                style={{ backgroundColor: 'blue' }}
-                onClick={() => setSelectedColor2('blue')}
-              />
-              <button
-                className={`w-8 h-8 rounded-full ${selectedColor2 === 'green' ? 'border-4 border-black' : ''}`}
-                style={{ backgroundColor: 'green' }}
-                onClick={() => setSelectedColor2('green')}
-              />
-              <button
-                className={`w-8 h-8 rounded-full ${selectedColor2 === 'yellow' ? 'border-4 border-black' : ''}`}
-                style={{ backgroundColor: 'yellow' }}
-                onClick={() => setSelectedColor2('yellow')}
-              />
-            </div>
-          </div>
+      {/* Success Message */}
+      {successMessage && (
+        <div className="fixed top-0 left-0 right-0 bg-green-500 text-white p-4 text-center">
+          {successMessage}
         </div>
-
-        {/* Product 3 */}
-        <div className="bg-white shadow-lg rounded-lg overflow-hidden">
-          <Image
-            src="/images/product3.jpg" // Replace with your product image path
-            alt="Product 3"
-            className="w-full h-64 object-cover"
-            height={300}
-            width={300}
-          />
-          <div className="p-4">
-            <h3 className="text-lg font-semibold">Product 3</h3>
-            <p className="text-gray-600 mt-2">$39.99</p>
-            <div className="flex mt-4 justify-start gap-4">
-              <button
-                className={`w-8 h-8 rounded-full ${selectedColor3 === 'red' ? 'border-4 border-black' : ''}`}
-                style={{ backgroundColor: 'red' }}
-                onClick={() => setSelectedColor3('red')}
-              />
-              <button
-                className={`w-8 h-8 rounded-full ${selectedColor3 === 'blue' ? 'border-4 border-black' : ''}`}
-                style={{ backgroundColor: 'blue' }}
-                onClick={() => setSelectedColor3('blue')}
-              />
-              <button
-                className={`w-8 h-8 rounded-full ${selectedColor3 === 'green' ? 'border-4 border-black' : ''}`}
-                style={{ backgroundColor: 'green' }}
-                onClick={() => setSelectedColor3('green')}
-              />
-              <button
-                className={`w-8 h-8 rounded-full ${selectedColor3 === 'yellow' ? 'border-4 border-black' : ''}`}
-                style={{ backgroundColor: 'yellow' }}
-                onClick={() => setSelectedColor3('yellow')}
-              />
-            </div>
-          </div>
-        </div>
-
-        {/* Product 4 */}
-        <div className="bg-white shadow-lg rounded-lg overflow-hidden">
-          <Image
-            src="/images/product4.jpg" // Replace with your product image path
-            alt="Product 4"
-            className="w-full h-64 object-cover"
-            height={200}
-            width={200}
-          />
-          <div className="p-4">
-            <h3 className="text-lg font-semibold">Product 4</h3>
-            <p className="text-gray-600 mt-2">$49.99</p>
-            <div className="flex mt-4 justify-start gap-4">
-              <button
-                className={`w-8 h-8 rounded-full ${selectedColor4 === 'red' ? 'border-4 border-black' : ''}`}
-                style={{ backgroundColor: 'red' }}
-                onClick={() => setSelectedColor4('red')}
-              />
-              <button
-                className={`w-8 h-8 rounded-full ${selectedColor4 === 'blue' ? 'border-4 border-black' : ''}`}
-                style={{ backgroundColor: 'blue' }}
-                onClick={() => setSelectedColor4('blue')}
-              />
-              <button
-                className={`w-8 h-8 rounded-full ${selectedColor4 === 'green' ? 'border-4 border-black' : ''}`}
-                style={{ backgroundColor: 'green' }}
-                onClick={() => setSelectedColor4('green')}
-              />
-              <button
-                className={`w-8 h-8 rounded-full ${selectedColor4 === 'yellow' ? 'border-4 border-black' : ''}`}
-                style={{ backgroundColor: 'yellow' }}
-                onClick={() => setSelectedColor4('yellow')}
-              />
-            </div>
-          </div>
-        </div>
-
-        {/* Product 5 */}
-        <div className="bg-white shadow-lg rounded-lg overflow-hidden">
-          <Image
-            src="/images/product5.jpg" // Replace with your product image path
-            alt="Product 5"
-            className="w-full h-64 object-cover"
-            height={300}
-            width={300}
-          />
-          <div className="p-4">
-            <h3 className="text-lg font-semibold">Product 5</h3>
-            <p className="text-gray-600 mt-2">$59.99</p>
-            <div className="flex mt-4 justify-start gap-4">
-              <button
-                className={`w-8 h-8 rounded-full ${selectedColor5 === 'red' ? 'border-4 border-black' : ''}`}
-                style={{ backgroundColor: 'red' }}
-                onClick={() => setSelectedColor5('red')}
-              />
-              <button
-                className={`w-8 h-8 rounded-full ${selectedColor5 === 'blue' ? 'border-4 border-black' : ''}`}
-                style={{ backgroundColor: 'blue' }}
-                onClick={() => setSelectedColor5('blue')}
-              />
-              <button
-                className={`w-8 h-8 rounded-full ${selectedColor5 === 'green' ? 'border-4 border-black' : ''}`}
-                style={{ backgroundColor: 'green' }}
-                onClick={() => setSelectedColor5('green')}
-              />
-              <button
-                className={`w-8 h-8 rounded-full ${selectedColor5 === 'yellow' ? 'border-4 border-black' : ''}`}
-                style={{ backgroundColor: 'yellow' }}
-                onClick={() => setSelectedColor5('yellow')}
-              />
-            </div>
-          </div>
-        </div>
-      </div>
-    </div>
+      )}
+    </>
   );
-}
+};
+
+export default Shop;

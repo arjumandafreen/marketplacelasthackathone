@@ -1,67 +1,59 @@
-"use client";  // Add this line
+"use client";
 
 import Image from "next/image";
-import { useState } from "react";
+import { useEffect, useState } from "react";
+import { useRouter } from 'next/navigation';
+
+import { client } from "@/sanity/lib/client";
+import { allProducts } from "@/sanity/lib/queries";
+import { urlFor } from "@/sanity/lib/image";
+
 import couples from "../components/images/carrot.png";
-import img1 from "../components/images/pic1.png";
-import img2 from "../components/images/pic2.png";
-import img3 from "../components/images/pic3.png";
-import img4 from "../components/images/pic4.png";
-import img5 from "../components/images/pic5.png";
-import img6 from "../components/images/pic6.png";
-import img7 from "../components/images/pic7.png";
-import img8 from "../components/images/pic8.png";
 import img9 from "../components/images/banner.jpg";
 import img10 from "../components/images/gogo.png";
+import Link from "next/link";
+import { Products } from "../../../types/products";
 
-// Hero Section Component
 const Herosection = () => {
-  const productData = [
-    { name: "Product 1", price: "$20", image: img1 },
-    { name: "Product 2", price: "$25", image: img2 },
-    { name: "Product 3", price: "$30", image: img3 },
-    { name: "Product 4", price: "$35", image: img4 },
-    { name: "Product 5", price: "$40", image: img5 },
-    { name: "Product 6", price: "$45", image: img6 },
-    { name: "Product 7", price: "$50", image: img7 },
-    { name: "Product 8", price: "$55", image: img8 },
-  ];
+  const [products, setProducts] = useState<Products[]>([]);
+  const [isLoading, setIsLoading] = useState<boolean>(true);
+  const [successMessage, setSuccessMessage] = useState<string | null>(null);
+  const router = useRouter();
 
-  const [selectedColor, setSelectedColor] = useState<string[]>(new Array(productData.length).fill(""));
+  useEffect(() => {
+    async function fetchProducts() {
+      try {
+        const fetchedProducts: Products[] = await client.fetch(allProducts);
+        setProducts(fetchedProducts);
+      } catch (error) {
+        console.error("Error fetching products:", error);
+      } finally {
+        setIsLoading(false);
+      }
+    }
+    fetchProducts();
+  }, []);
 
-  const handleColorChange = (index: number, color: string) => {
-    const updatedColors = [...selectedColor];
-    updatedColors[index] = color;
-    setSelectedColor(updatedColors);
+  const handleClick = (product: Products) => {
+    console.log("Product added to cart:", product);
+    setSuccessMessage("Your product has been added to the cart successfully!");
+    setTimeout(() => setSuccessMessage(null), 3000); // Clear message after 3 seconds
   };
 
   return (
-    <div>
+    <div className="relative w-full">
       {/* Hero Section */}
       <div className="relative w-full h-[50vh] sm:h-[716px] bg-cover">
         <div className="relative w-full h-full">
-          <Image
-            src={img9}
-            alt="Banner"
-            fill
-            style={{ objectFit: "cover" }}
-          />
+          <Image src={img9} alt="Banner" fill style={{ objectFit: "cover" }} />
           <div className="absolute inset-0 opacity-40"></div>
           <div className="absolute inset-0 flex flex-col justify-center items-center sm:items-start p-8 sm:p-12 text-white">
-            <div className="w-full sm:w-[599px] h-auto gap-[25px] text-center sm:text-left">
-              <h5 className="font-montserrat font-bold text-[14px] sm:text-[16px] leading-[20px] sm:leading-[24px] tracking-[0.1px]">
-                SUMMER 2020
-              </h5>
-              <h1 className="font-montserrat font-bold text-[30px] sm:text-[58px] leading-[40px] sm:leading-[80px] tracking-[0.2px]">
-               NEW COLLECTION  
-              </h1>
-              <h4 className="font-montserrat font-normal text-[14px] sm:text-[20px] leading-[20px] sm:leading-[30px] tracking-[0.2px] w-full sm:w-[376px]">
-                We understand the behavior of large objects, but things at a smaller scale behave differently
-              </h4>
+            <div className="w-full sm:w-[599px] text-center sm:text-left">
+              <h5 className="font-bold text-[14px] sm:text-[16px]">SUMMER 2020</h5>
+              <h1 className="font-bold text-[30px] sm:text-[58px]">NEW COLLECTION</h1>
+              <h4 className="text-[14px] sm:text-[20px] sm:w-[376px]">We understand the behavior of large objects, but things at a smaller scale behave differently.</h4>
               <br />
-              <button className="w-[60%] sm:w-[170px] bg-[#2DC071] py-[12px] sm:px-[40px] px-[30px] rounded-[5px] gap-[10px] text-white font-montserrat">
-                Shop Now
-              </button>
+              <button className="w-[60%] sm:w-[170px] bg-[#2DC071] py-[12px] px-[30px] sm:px-[40px] rounded text-white">Shop Now</button>
             </div>
           </div>
         </div>
@@ -69,100 +61,91 @@ const Herosection = () => {
 
       {/* Product Section */}
       <section className="py-16 px-6 bg-gray-50">
-        <h2 className="text-3xl font-bold text-center mb-8">Featured Products</h2>
-        <p className="text-xl text-center mb-8">Browse exclusive collections</p>
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8">
-          {productData.map((product, index) => (
-            <div key={index} className="bg-white shadow-lg rounded-lg overflow-hidden p-6">
-              <div className="flex flex-col items-center">
-                <Image
-                  src={product.image}
-                  alt={`Product ${index + 1}`}
-                  className="w-full h-auto object-cover"
-                  height={300}
-                  width={300}
-                />
-                <div className="mt-4 w-full text-center">
-                  <h3 className="text-lg font-semibold">{product.name}</h3>
-                  <p className="text-gray-600 mt-2">{product.price}</p>
-                  <div className="flex mt-4 justify-center gap-4">
-                    {['red', 'blue', 'green', 'yellow'].map((color) => (
-                      <button
-                        key={color}
-                        className={`w-8 h-8 rounded-full ${selectedColor[index] === color ? 'border-4 border-black' : ''}`}
-                        style={{ backgroundColor: color }}
-                        onClick={() => handleColorChange(index, color)}
+        <h2 className="text-3xl font-bold text-center mb-8 text-red-800">Featured Products</h2>
+
+        {products.length > 0 ? (
+          <div className="max-w-6xl mx-auto px-4 py-8">
+            <h1 className="text-3xl font-bold text-center mb-8 text-blue-800">Our Products</h1>
+            <br />
+            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-8">
+              {products.map((product) => (
+                <div key={product._id} className="bg-white rounded-lg shadow-md hover:shadow-xl transform transition duration-300 hover:scale-105">
+                  <div className="relative w-full h-56">
+                    {product.image && (
+                      <Image
+                        src={urlFor(product.image).url()}
+                        alt={product.name}
+                        priority={true}
+                        fill
+                        sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
+                        style={{ objectFit: "cover", borderRadius: "0.5rem" }}
                       />
-                    ))}
+                    )}
+                  </div>
+                  <div className="p-4 text-center space-y-2">
+                    <h2 className="text-xl font-semibold text-gray-800 truncate">{product.name}</h2>
+                    <p className="text-green-600 text-lg font-bold">${product.price}</p>
+                    {product.discountPercent > 0 && (
+                      <p className="text-red-500 text-sm font-semibold">{product.discountPercent}% Off</p>
+                    )}
+                    <Link href={`/product/${product.slugCurrent}`}>
+                      <button className="mt-4 mb-2 bg-purple-600 text-white text-xs font-medium py-1 px-3 rounded hover:bg-purple-700">
+                        View Details
+                      </button>
+                    </Link>
+                    <button
+                      onClick={() => handleClick(product)}
+                      className="mt-4 mb-2 bg-purple-600 text-white text-xs font-medium py-1 px-3 rounded hover:bg-purple-700"
+                    >
+                      Add to Cart
+                    </button>
                   </div>
                 </div>
-              </div>
+              ))}
             </div>
-          ))}
-        </div>
+          </div>
+        ) : (
+          <p className="text-center">Loading products...</p>
+        )}
       </section>
 
-      {/* Green Section */}
+      {/* Success Message */}
+      {successMessage && (
+        <div className="fixed top-0 left-0 right-0 bg-green-500 text-white p-4 text-center">
+          {successMessage}
+        </div>
+      )}
+
+      {/* Other Sections */}
       <div className="w-full bg-[#23856D] py-10 lg:py-20">
         <div className="max-w-screen-xl mx-auto flex flex-col lg:flex-row items-center gap-10 px-6 lg:px-12">
           <div className="flex-1 text-center lg:text-left">
-            <h4 className="text-[16px] font-Montserrat font-medium leading-6 text-white">SUMMER 2024</h4>
-            <h1 className="text-[32px] lg:text-[58px] font-Montserrat font-bold leading-10 lg:leading-[72px] text-white mt-2">
-              Luma Elite Product
-            </h1>
-            <p className="text-[14px] lg:text-[16px] font-Montserrat font-medium leading-6 text-white mt-4">
-              Uncover the excellence of our products
-            </p>
-            <div className="flex flex-col sm:flex-row items-center lg:items-start gap-4 mt-6">
-              <h3 className="text-[24px] font-Montserrat font-bold text-white">$16.48</h3>
-              <button className="bg-[#2DC071] text-white font-Montserrat font-medium px-6 py-3 rounded-md">
-                ADD TO CART
-              </button>
+            <h4 className="text-white">SUMMER 2024</h4>
+            <h1 className="text-[32px] lg:text-[58px] font-bold text-white">Luma Elite Product</h1>
+            <p className="text-white">Uncover the excellence of our products</p>
+            <div className="flex flex-col sm:flex-row items-center gap-4 mt-6">
+              <h3 className="text-white">$16.48</h3>
+              <button className="bg-[#2DC071] text-white px-6 py-3 rounded-md">ADD TO CART</button>
             </div>
           </div>
           <div className="flex-1">
-            <Image
-              src={img10}
-              alt="Green Man"
-              width={500}
-              height={500}
-              className="mx-auto lg:mx-0"
-            />
+            <Image src={img10} alt="Green Man" width={500} height={500} className="mx-auto lg:mx-0" />
           </div>
         </div>
       </div>
 
-      {/* White Section (added below the Green Section) */}
       <div className="w-full h-auto mt-[50px]">
-        <div className="w-full max-w-[1440px] flex flex-col lg:flex-row gap-[30px] px-4 lg:px-0">
-          <div className="relative w-full lg:w-[707px] h-[400px] lg:h-[682px] flex justify-center">
-            <Image
-              src={couples}
-              alt="couple"
-              className="object-cover w-full h-full"
-            />
+        <div className="max-w-[1440px] flex flex-col lg:flex-row gap-[30px] px-4 lg:px-0">
+          <div className="relative w-full lg:w-[707px] h-[400px] lg:h-[682px]">
+            <Image src={couples} alt="couple" className="object-cover w-full h-full" />
           </div>
-          <div className="w-full lg:w-[573px] h-auto flex flex-col gap-[20px] justify-center items-center lg:items-start text-center lg:text-left mt-[20px] lg:mt-0">
-            <h5 className="text-[14px] lg:text-[16px] font-Montserrat font-bold leading-[24px] text-[#BDBDBD]">
-              SUMMER 2020
-            </h5>
-            <h2 className="lg:w-[375px] text-[24px] lg:text-[40px] font-Montserrat font-bold leading-[32px] lg:leading-[50px] text-[#252B42]">
-              Part of the Neural Universe
-            </h2>
-            <h4 className="lg:w-[375px] text-[16px] lg:text-[20px] font-Montserrat font-normal leading-[24px] lg:leading-[30px] text-[#737373]">
-              We know how large objects will act, but things on a small scale.
-            </h4>
+          <div className="w-full lg:w-[573px] flex flex-col gap-[20px] items-center lg:items-start text-center lg:text-left">
+            <h5 className="text-[#BDBDBD]">SUMMER 2020</h5>
+            <h2 className="lg:w-[375px] text-[#252B42]">Part of the Neural Universe</h2>
+            <h4 className="lg:w-[375px] text-[#737373]">We know how large objects will act, but things on a small scale.</h4>
             <div className="flex flex-wrap justify-center lg:justify-start gap-[10px]">
-              <button className="w-[140px] lg:w-[156px] h-[52px] rounded-[5px] py-[12px] px-[20px] lg:px-[40px] bg-[#2DC071] flex justify-center items-center">
-                <h1 className="text-[14px] font-Montserrat font-bold text-white">
-                  BUY 
-                </h1>
-              </button>
-              <button className="w-[140px] lg:w-[156px] h-[52px] rounded-[5px] py-[12px] px-[20px] lg:px-[40px] border border-[#2DC071] flex justify-center items-center">
-                <h1 className="text-[14px] font-Montserrat font-bold whitespace-nowrap text-[#2DC071]">
-                  READ MORE
-                </h1>
-              </button>
+              <button className="bg-[#2DC071] text-white py-[12px] px-[20px] rounded">BUY</button>
+              <button className="border-[#2DC071] text-[#2DC071] border py-[12px] px-[20px] rounded">WATCH TRAILER</button>
             </div>
           </div>
         </div>
@@ -172,3 +155,5 @@ const Herosection = () => {
 };
 
 export default Herosection;
+
+
